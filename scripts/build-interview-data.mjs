@@ -123,16 +123,6 @@ function slugify(text) {
     .slice(0, 60);
 }
 
-function sentencePreview(text) {
-  const cleaned = text.replace(/\s+/g, " ").trim();
-  if (cleaned.length <= 220) {
-    return cleaned;
-  }
-
-  const preview = cleaned.slice(0, 217).trim();
-  return `${preview}...`;
-}
-
 function answerLengthLabel(answer) {
   const words = answer.split(/\s+/).filter(Boolean).length;
 
@@ -180,6 +170,50 @@ function deriveTags(text) {
     .filter(([, regex]) => regex.test(text))
     .map(([label]) => label)
     .slice(0, 4);
+}
+
+function buildAnswerTip(prompt, category) {
+  if (/introduce yourself|tell me about yourself|brief introduction|education and your last job/i.test(prompt)) {
+    return "Lead with your current role, total experience, strongest technologies, and close with the business impact of your work.";
+  }
+
+  if (/current role|current project|project which you're working on|recent project|most interesting project/i.test(prompt)) {
+    return "Answer in a clear flow: project context, your ownership, the architecture or stack, and the measurable value delivered.";
+  }
+
+  if (/design|architecture|system/i.test(prompt)) {
+    return "Start with requirements and scope, identify core services and data model, then cover scale, failure handling, and tradeoffs.";
+  }
+
+  if (/how would you|walk me through|process|flow|lifecycle/i.test(prompt)) {
+    return "Use a step-by-step structure, call out the main components involved, and explain why each step exists.";
+  }
+
+  if (/sql|query|database|schema|index|partition/i.test(prompt)) {
+    return "Be explicit about data shape, access patterns, and performance implications instead of staying at a high level.";
+  }
+
+  if (/docker|kubernetes|helm|ecs|ecr|deployment|ci\/cd|terraform/i.test(prompt)) {
+    return "Describe the deployment path in order: build artifact, registry, runtime platform, configuration, and verification after release.";
+  }
+
+  if (/security|jwt|oauth|authentication|authorization|token/i.test(prompt)) {
+    return "State the trust boundary first, then explain how identity is validated, how access is enforced, and how secrets stay protected.";
+  }
+
+  if (/debug|bug|memory|issue|failure|exception/i.test(prompt)) {
+    return "Frame the answer as reproduction, signals you checked, root-cause isolation, fix, and how you prevented recurrence.";
+  }
+
+  if (/agile|sprint|team|leadership|commitment|convince|collaborat/i.test(prompt) || category === "Behavioral") {
+    return "Keep the response concrete: situation, your specific action, the reasoning behind it, and the outcome.";
+  }
+
+  if (/angular|react|frontend|ui/i.test(prompt)) {
+    return "Balance implementation details with maintainability: component structure, state handling, debugging approach, and team readability.";
+  }
+
+  return "Answer directly, keep the structure crisp, and support the point with a specific example rather than generic statements.";
 }
 
 function isQuestionStart(lines, index) {
@@ -271,7 +305,7 @@ const interviewSections = rawSections.map((section, sectionIndex) => {
       id: `${metadata.title}-${slugify(prompt)}`,
       prompt,
       answer,
-      shortAnswer: sentencePreview(answer),
+      answerTip: buildAnswerTip(prompt, classifyQuestion(prompt)),
       category: classifyQuestion(prompt),
       tags: deriveTags(combinedText),
       answerLengthLabel: answerLengthLabel(answer),

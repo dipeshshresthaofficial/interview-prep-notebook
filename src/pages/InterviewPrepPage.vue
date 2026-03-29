@@ -36,7 +36,7 @@ const filteredSections = computed(() => {
             const haystack = [
               question.prompt,
               question.answer,
-              question.shortAnswer,
+              question.answerTip,
               question.category,
               ...question.tags,
             ]
@@ -110,17 +110,7 @@ function toggleQuestion(questionId) {
       </div>
 
       <div class="hero-actions">
-        <label class="search-field" for="interview-search">
-          <span>Search questions, answers, topics</span>
-          <input
-            id="interview-search"
-            v-model="searchTerm"
-            type="search"
-            placeholder="Search Spring Boot, AWS, system design, Angular..."
-          />
-        </label>
-
-        <a class="logout-button" href="/logout">Log Out</a>
+        <a class="logout-icon" href="/logout" aria-label="Log out" title="Log out">⏻</a>
       </div>
     </section>
 
@@ -137,10 +127,15 @@ function toggleQuestion(questionId) {
           <span class="eyebrow">Interview Library</span>
           <h2>Structured practice sessions</h2>
         </div>
-        <p>
-          Each session opens into question-level answers so the material stays easy to scan during
-          preparation.
-        </p>
+
+        <label class="section-search-field" for="interview-search">
+          <input
+            id="interview-search"
+            v-model="searchTerm"
+            type="search"
+            placeholder="Search questions, answers, tags, topics..."
+          />
+        </label>
       </header>
 
       <div v-if="!filteredSections.length" class="empty-state">
@@ -187,13 +182,12 @@ function toggleQuestion(questionId) {
                 </div>
 
                 <div class="question-side">
-                  <span class="answer-chip">{{ question.answerLengthLabel }}</span>
                   <span class="toggle-indicator">{{ isQuestionOpen(question.id) ? "−" : "+" }}</span>
                 </div>
               </button>
 
               <div v-if="isQuestionOpen(question.id)" class="question-body">
-                <p class="answer-highlight">{{ question.shortAnswer }}</p>
+                <p class="answer-highlight">Tips: {{ question.answerTip }}</p>
                 <p class="answer-copy">{{ question.answer }}</p>
 
                 <div class="tag-row">
